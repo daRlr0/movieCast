@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="8dp"
+    android:gravity="center">
+
+    <ImageView
+        android:id="@+id/profileImageView"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:scaleType="centerCrop"
+        android:contentDescription="Actor Profile" />
+
+    <TextView
+        android:id="@+id/nameTextView"
+        android:layout_width="80dp"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:maxLines="2"
+        android:ellipsize="end"
+        android:gravity="center"
+        android:layout_marginTop="4dp"
+        android:textColor="?attr/colorOnSurface" />
+
+    <TextView
+        android:id="@+id/characterTextView"
+        android:layout_width="80dp"
+        android:layout_height="wrap_content"
+        android:textSize="10sp"
+        android:maxLines="2"
+        android:ellipsize="end"
+        android:gravity="center"
+        android:layout_marginTop="2dp"
+        android:textColor="?attr/colorOnSurfaceVariant" />
+
+</LinearLayout>
