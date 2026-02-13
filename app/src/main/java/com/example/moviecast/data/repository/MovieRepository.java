@@ -33,70 +33,32 @@ import java.util.concurrent.Executors;
 import retrofit2.Call; // Retrofit - класс для асинхронных запросов
 
 /**
- * MovieRepository - Repository (Репозиторий) в архитектуре MVVM
- * 
- * Роль в MVVM:
- * Это Repository, который является единым источником данных для приложения.
- * Repository объединяет данные из разных источников:
- * 1. Удаленный источник - TMDb API через Retrofit
- * 2. Локальный источник - база данных Room для избранного и кэширования
- * 
- * ViewModel взаимодействует только с Repository, не зная о деталях источников данных.
- * 
- * Основные функции:
- * - Выполнение сетевых запросов к TMDb API через Retrofit
- * - Операции с локальной базой данных Room (CRUD)
- * - Конвертация данных между форматами API и базы данных
- * - Кэширование жанров для offline режима
+ * MovieRepository - единый источник данных: Retrofit (TMDb API) и Room (избранное, жанры).
  */
 public class MovieRepository {
     
-    // API ключ из BuildConfig (хранится в local.properties)
     private static final String API_KEY = BuildConfig.API_KEY;
-    // Язык для всех запросов к API - русский
     private static final String LANGUAGE = "ru-RU";
     
-    // Room - DAO для операций с фильмами в базе данных
     private MovieDao movieDao;
-    // Room - DAO для операций с жанрами в базе данных
     private GenreDao genreDao;
-    // Retrofit - сервис для выполнения HTTP запросов к TMDb API
     private TMDbApiService apiService;
-    // Executor для выполнения операций с базой данных в фоновом потоке
     private Executor executor;
-    // GSON - для конвертации объектов в JSON и обратно
     private Gson gson;
-    // Карта для кэширования жанров (ID -> Название)
     private Map<Integer, String> genreMap;
     
-    /**
-     * Конструктор Repository
-     * Инициализирует Room базу данных, Retrofit API сервис и загружает кэш жанров
-     */
     public MovieRepository(Context context) {
-        // Room - получение экземпляра базы данных
         MovieDatabase database = MovieDatabase.getInstance(context);
         movieDao = database.movieDao();
         genreDao = database.genreDao();
-        // Retrofit - получение API сервиса
         apiService = RetrofitClient.getApiService();
         executor = Executors.newSingleThreadExecutor();
-        // GSON - инициализация для работы с JSON
         gson = new Gson();
         genreMap = new HashMap<>();
-        // Загружаем жанры из кэша при создании Repository
         loadGenresFromCache();
     }
     
-    // ============ МЕТОДЫ ДЛЯ РАБОТЫ С API (Retrofit) ============
-    
-    /**
-     * Retrofit: Получение популярных фильмов с TMDb API
-     * Конечная точка: /movie/popular
-     * 
-     * @param page - номер страницы для пагинации
-     * @return Call для асинхронного выполнения запроса
-     */
+    // Retrofit - запросы к API
     public Call<MovieResponse> getPopularMovies(int page) {
         return apiService.getPopularMovies(API_KEY, LANGUAGE, page);
     }

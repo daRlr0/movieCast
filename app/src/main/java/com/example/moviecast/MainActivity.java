@@ -22,48 +22,20 @@ import com.example.moviecast.ui.viewmodel.MainViewModel;
 import com.google.android.material.chip.Chip;
 
 /**
- * MainActivity - главный экран приложения с сеткой фильмов
- * 
- * Роль в MVVM:
- * Это View (Activity), которая отвечает за отображение UI и взаимодействие с пользователем.
- * Activity наблюдает за данными из ViewModel через LiveData и обновляет UI.
- * Не содержит бизнес-логику - все данные получает из MainViewModel.
- * 
- * Основной функционал:
- * - Отображение популярных фильмов в сетке (2 колонки)
- * - Поиск фильмов
- * - Фильтрация по жанрам и годам
- * - Пагинация при прокрутке
- * - Добавление/удаление из избранного
- * - Переключение темы приложения
+ * MainActivity - главный экран: сетка фильмов, поиск, фильтры, избранное.
+ * View в MVVM, данные из MainViewModel через LiveData.
  */
 public class MainActivity extends AppCompatActivity {
 
-    // ViewBinding для доступа к элементам UI без findViewById
     private ActivityMainBinding binding;
-    
-    // ViewModel для управления данными и бизнес-логикой
     private MainViewModel viewModel;
-    
-    // Адаптер для отображения списка фильмов в RecyclerView
     private MovieAdapter adapter;
-    
-    // LayoutManager для сетки из 2 колонок
     private GridLayoutManager layoutManager;
-    
-    // Флаг состояния загрузки следующей страницы (для пагинации)
     private boolean isLoadingMore = false;
-    
-    // Меню для доступа к кнопке переключения темы
     private Menu menu;
 
-    /**
-     * Метод onCreate - точка входа в Activity
-     * Вызывается при создании Activity
-     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // Применяем сохраненную тему ДО установки layout (важно!)
         ThemeManager.applyTheme(this);
         
         super.onCreate(savedInstanceState);
@@ -72,7 +44,6 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        // Настройка Toolbar как ActionBar
         setSupportActionBar(binding.toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setTitle("Media Explorer");

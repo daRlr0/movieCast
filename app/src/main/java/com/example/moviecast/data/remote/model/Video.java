@@ -2,6 +2,7 @@ package com.example.moviecast.data.remote.model;
 
 import com.google.gson.annotations.SerializedName;
 
+/** Видео/трейлер из API (key для YouTube). */
 public class Video {
     
     @SerializedName("id")

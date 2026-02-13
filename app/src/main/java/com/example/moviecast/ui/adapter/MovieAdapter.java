@@ -20,6 +20,10 @@ import com.example.moviecast.data.remote.model.Movie;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * MovieAdapter - адаптер списка фильмов на главном экране.
+ * Отображает постер, название, рейтинг, кнопку избранного. Glide для картинок.
+ */
 public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHolder> {
     
     private static final String IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w500";
@@ -28,7 +32,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
     private OnFavoriteClickListener favoriteListener;
     
     public interface OnMovieClickListener {
-        void onMovieClick(Movie movie, View posterView);
+        void onMovieClick(Movie movie, View posterView); // posterView для shared transition
     }
     
     public interface OnFavoriteClickListener {
@@ -114,13 +118,14 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
             releaseDateTextView.setText(movie.getReleaseDate());
             ratingTextView.setText(String.format("%.1f", movie.getVoteAverage()));
             
-            // Update favorite icon
+            // Иконка избранного
             if (isFavorite) {
                 favoriteImageButton.setImageResource(R.drawable.ic_heart_filled);
             } else {
                 favoriteImageButton.setImageResource(R.drawable.ic_heart_empty);
             }
             
+            // Glide - загрузка постера
             String posterUrl = IMAGE_BASE_URL + movie.getPosterPath();
             Glide.with(itemView.getContext())
                     .load(posterUrl)
@@ -129,8 +134,8 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
                     .into(posterImageView);
         }
         
+        // Анимация при нажатии на сердечко
         private void animateFavoriteButton() {
-            // Scale animation for visual feedback
             ObjectAnimator scaleX = ObjectAnimator.ofFloat(favoriteImageButton, "scaleX", 1.0f, 1.3f, 1.0f);
             ObjectAnimator scaleY = ObjectAnimator.ofFloat(favoriteImageButton, "scaleY", 1.0f, 1.3f, 1.0f);
             

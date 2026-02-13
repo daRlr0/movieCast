@@ -3,6 +3,9 @@ package com.example.moviecast.data.remote.model;
 import com.google.gson.annotations.SerializedName;
 import java.util.List;
 
+/**
+ * Movie - модель фильма из TMDb API (Gson парсинг).
+ */
 public class Movie {
     
     @SerializedName("id")

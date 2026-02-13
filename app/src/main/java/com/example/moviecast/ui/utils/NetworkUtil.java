@@ -4,6 +4,10 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
+/**
+ * NetworkUtil - проверка доступности интернета.
+ * Используется перед запросами к API.
+ */
 public class NetworkUtil {
     
     public static boolean isNetworkAvailable(Context context) {

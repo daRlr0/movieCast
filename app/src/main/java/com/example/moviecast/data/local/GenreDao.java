@@ -7,18 +7,21 @@ import androidx.room.Query;
 
 import java.util.List;
 
+/**
+ * GenreDao - доступ к таблице жанров в Room.
+ */
 @Dao
 public interface GenreDao {
-    
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertAll(List<GenreEntity> genres);
-    
+
     @Query("SELECT * FROM genres")
     List<GenreEntity> getAllGenres();
-    
+
     @Query("SELECT * FROM genres WHERE id = :id")
     GenreEntity getGenreById(int id);
-    
+
     @Query("SELECT COUNT(*) FROM genres")
     int getGenreCount();
 }

@@ -11,6 +11,10 @@ import retrofit2.http.GET;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
 
+/**
+ * TMDbApiService - интерфейс Retrofit для TMDb API.
+ * Все методы возвращают Call для асинхронного запроса.
+ */
 public interface TMDbApiService {
     
     @GET("genre/movie/list")

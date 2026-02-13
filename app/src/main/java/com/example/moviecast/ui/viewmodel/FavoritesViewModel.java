@@ -11,6 +11,10 @@ import com.example.moviecast.data.repository.MovieRepository;
 
 import java.util.List;
 
+/**
+ * FavoritesViewModel - данные для экрана избранного.
+ * Читает список из Room через Repository.
+ */
 public class FavoritesViewModel extends AndroidViewModel {
     
     private MovieRepository repository;
@@ -19,13 +23,14 @@ public class FavoritesViewModel extends AndroidViewModel {
     public FavoritesViewModel(@NonNull Application application) {
         super(application);
         repository = new MovieRepository(application);
-        favoritesLiveData = repository.getAllFavorites();
+        favoritesLiveData = repository.getAllFavorites(); // Room - READ
     }
     
     public LiveData<List<MediaItem>> getFavorites() {
         return favoritesLiveData;
     }
     
+    // Удаление из избранного (Room - DELETE)
     public void removeFromFavorites(MediaItem mediaItem) {
         repository.deleteMediaItem(mediaItem);
     }

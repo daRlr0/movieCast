@@ -2,6 +2,7 @@ package com.example.moviecast.data.remote.model;
 
 import com.google.gson.annotations.SerializedName;
 
+/** Жанр из API (id + name). */
 public class Genre {
     
     @SerializedName("id")

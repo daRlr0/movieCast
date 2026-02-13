@@ -13,12 +13,16 @@ import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
-import com.bumptech.glide.Glide;
+import com.bumptech.glide.Glide; // Glide - библиотека для загрузки изображений
 import com.example.moviecast.databinding.ActivityMovieDetailsBinding;
 import com.example.moviecast.ui.adapter.CastAdapter;
 import com.example.moviecast.ui.utils.ThemeManager;
 import com.example.moviecast.ui.viewmodel.MovieDetailsViewModel;
 
+/**
+ * MovieDetailsActivity - экран с подробной информацией о фильме
+ * View в MVVM: отображает данные из ViewModel
+ */
 public class MovieDetailsActivity extends AppCompatActivity {
 
     private static final String IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w500";
@@ -32,16 +36,17 @@ public class MovieDetailsActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // Apply saved theme before setting content view
+        // Применяем сохраненную тему
         ThemeManager.applyTheme(this);
         
         super.onCreate(savedInstanceState);
         binding = ActivityMovieDetailsBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        // Enable shared element transition
+        // Откладываем анимацию перехода до загрузки изображения
         postponeEnterTransition();
 
+        // Получаем ID фильма из предыдущего экрана
         movieId = getIntent().getIntExtra("movie_id", -1);
         if (movieId == -1) {
             finish();
@@ -52,9 +57,11 @@ public class MovieDetailsActivity extends AppCompatActivity {
         setupViewModel();
         setupListeners();
         
+        // Загружаем данные о фильме через ViewModel
         viewModel.loadMovieDetails(movieId);
     }
 
+    // Настройка горизонтального списка актеров
     private void setupCastRecyclerView() {
         castAdapter = new CastAdapter();
         binding.castRecyclerView.setLayoutManager(
@@ -62,9 +69,11 @@ public class MovieDetailsActivity extends AppCompatActivity {
         binding.castRecyclerView.setAdapter(castAdapter);
     }
 
+    // Подписка на LiveData из ViewModel
     private void setupViewModel() {
         viewModel = new ViewModelProvider(this).get(MovieDetailsViewModel.class);
         
+        // Основные данные о фильме
         viewModel.getMovie().observe(this, movie -> {
             if (movie != null) {
                 binding.titleTextView.setText(movie.getTitle());
@@ -72,51 +81,59 @@ public class MovieDetailsActivity extends AppCompatActivity {
                 binding.ratingTextView.setText(String.format("%.1f/10", movie.getVoteAverage()));
                 binding.overviewTextView.setText(movie.getOverview());
                 
+                // Загружаем постер через Glide
                 String posterUrl = IMAGE_BASE_URL + movie.getPosterPath();
                 Glide.with(this)
                         .load(posterUrl)
                         .into(binding.posterImageView);
                 
-                // Start transition after image loads
+                // Запускаем анимацию после загрузки
                 binding.posterImageView.post(() -> startPostponedEnterTransition());
             }
         });
         
+        // Жанры
         viewModel.getGenres().observe(this, genres -> {
             if (genres != null && !genres.isEmpty()) {
                 binding.genresTextView.setText(genres);
             }
         });
         
+        // Актеры
         viewModel.getCast().observe(this, cast -> {
             if (cast != null) {
                 castAdapter.setCastList(cast);
             }
         });
         
+        // Трейлер
         viewModel.getTrailerKey().observe(this, key -> {
             trailerKey = key;
             binding.trailerButton.setEnabled(key != null);
         });
         
+        // Прогресс загрузки
         viewModel.getLoading().observe(this, isLoading -> {
             if (isLoading != null) {
                 binding.progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
             }
         });
         
+        // Ошибки
         viewModel.getError().observe(this, error -> {
             if (error != null) {
                 Toast.makeText(this, error, Toast.LENGTH_SHORT).show();
             }
         });
         
+        // Статус избранного (Room)
         viewModel.getIsFavorite().observe(this, isFavorite -> {
             if (isFavorite != null) {
                 updateFavoriteIcon(isFavorite);
             }
         });
         
+        // Комментарий пользователя (Room)
         viewModel.getUserComment().observe(this, comment -> {
             if (comment != null && !comment.equals(binding.commentEditText.getText().toString())) {
                 binding.commentEditText.setText(comment);
@@ -124,24 +141,27 @@ public class MovieDetailsActivity extends AppCompatActivity {
         });
     }
 
+    // Обработчики кликов
     private void setupListeners() {
+        // Добавление/удаление из избранного (Room)
         binding.favoriteImageButton.setOnClickListener(v -> {
-            // Animate the button click
             animateFavoriteButton();
-            // Toggle favorite status
             viewModel.toggleFavorite(movieId);
         });
         
+        // Сохранение комментария (Room)
         binding.saveCommentButton.setOnClickListener(v -> {
             String comment = binding.commentEditText.getText().toString().trim();
             viewModel.updateComment(movieId, comment);
             Toast.makeText(this, "Комментарий сохранён", Toast.LENGTH_SHORT).show();
         });
         
+        // Поделиться (Intent)
         binding.shareButton.setOnClickListener(v -> {
             shareMovie();
         });
         
+        // Трейлер (Intent)
         binding.trailerButton.setOnClickListener(v -> {
             openTrailer();
         });
@@ -155,8 +175,8 @@ public class MovieDetailsActivity extends AppCompatActivity {
         }
     }
 
+    // Анимация "bounce" при клике на сердечко
     private void animateFavoriteButton() {
-        // Scale animation for visual feedback
         ObjectAnimator scaleX = ObjectAnimator.ofFloat(binding.favoriteImageButton, "scaleX", 1.0f, 1.3f, 1.0f);
         ObjectAnimator scaleY = ObjectAnimator.ofFloat(binding.favoriteImageButton, "scaleY", 1.0f, 1.3f, 1.0f);
         
@@ -169,6 +189,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
         scaleY.start();
     }
 
+    // Отправка информации о фильме через другие приложения
     private void shareMovie() {
         if (viewModel.getMovie().getValue() != null) {
             String movieTitle = viewModel.getMovie().getValue().getTitle();
@@ -181,6 +202,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
         }
     }
 
+    // Открытие трейлера на YouTube
     private void openTrailer() {
         if (trailerKey != null) {
             Intent intent = new Intent(Intent.ACTION_VIEW);

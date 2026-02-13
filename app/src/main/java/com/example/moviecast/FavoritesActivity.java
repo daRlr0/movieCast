@@ -15,6 +15,10 @@ import com.example.moviecast.ui.adapter.FavoritesAdapter;
 import com.example.moviecast.ui.utils.ThemeManager;
 import com.example.moviecast.ui.viewmodel.FavoritesViewModel;
 
+/**
+ * FavoritesActivity - экран списка избранных фильмов.
+ * View в MVVM: данные из Room через FavoritesViewModel.
+ */
 public class FavoritesActivity extends AppCompatActivity {
 
     private ActivityFavoritesBinding binding;
@@ -24,7 +28,6 @@ public class FavoritesActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // Apply saved theme before setting content view
         ThemeManager.applyTheme(this);
         
         super.onCreate(savedInstanceState);
@@ -41,6 +44,7 @@ public class FavoritesActivity extends AppCompatActivity {
         setupBottomNavigation();
     }
 
+    // Сетка 2 колонки, по клику переход на экран деталей
     private void setupRecyclerView() {
         GridLayoutManager layoutManager = new GridLayoutManager(this, 2);
         binding.recyclerView.setLayoutManager(layoutManager);
@@ -54,6 +58,7 @@ public class FavoritesActivity extends AppCompatActivity {
         binding.recyclerView.setAdapter(adapter);
     }
 
+    // Подписка на список избранного из Room
     private void setupViewModel() {
         viewModel = new ViewModelProvider(this).get(FavoritesViewModel.class);
         
@@ -61,6 +66,7 @@ public class FavoritesActivity extends AppCompatActivity {
             if (favorites != null) {
                 adapter.setFavorites(favorites);
                 
+                // Пустой список - показываем заглушку
                 if (favorites.isEmpty()) {
                     binding.emptyTextView.setVisibility(View.VISIBLE);
                     binding.recyclerView.setVisibility(View.GONE);
@@ -114,13 +120,11 @@ public class FavoritesActivity extends AppCompatActivity {
             MenuItem themeItem = menu.findItem(R.id.action_theme_toggle);
             if (themeItem != null) {
                 if (ThemeManager.isDarkMode(this)) {
-                    // Currently dark mode, show sun icon (to switch to light)
                     themeItem.setIcon(R.drawable.ic_light_mode);
-                    themeItem.setTitle("Switch to Light Mode");
+                    themeItem.setTitle("Переключить на светлую тему");
                 } else {
-                    // Currently light mode, show moon icon (to switch to dark)
                     themeItem.setIcon(R.drawable.ic_dark_mode);
-                    themeItem.setTitle("Switch to Dark Mode");
+                    themeItem.setTitle("Переключить на тёмную тему");
                 }
             }
         }

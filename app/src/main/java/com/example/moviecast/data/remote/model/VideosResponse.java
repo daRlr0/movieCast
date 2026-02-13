@@ -3,6 +3,7 @@ package com.example.moviecast.data.remote.model;
 import com.google.gson.annotations.SerializedName;
 import java.util.List;
 
+/** Ответ API: список видео/трейлеров фильма. */
 public class VideosResponse {
     
     @SerializedName("id")

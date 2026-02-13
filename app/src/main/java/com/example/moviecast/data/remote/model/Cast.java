@@ -2,6 +2,7 @@ package com.example.moviecast.data.remote.model;
 
 import com.google.gson.annotations.SerializedName;
 
+/** Актёр из API (имя, роль, путь к фото). */
 public class Cast {
     
     @SerializedName("id")

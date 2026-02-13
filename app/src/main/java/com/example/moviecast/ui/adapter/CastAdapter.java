@@ -16,6 +16,10 @@ import com.example.moviecast.data.remote.model.Cast;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * CastAdapter - адаптер списка актёров на экране деталей фильма.
+ * Фото, имя, роль. Glide для загрузки фото. Показываем до 10 человек.
+ */
 public class CastAdapter extends RecyclerView.Adapter<CastAdapter.CastViewHolder> {
     
     private static final String IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w185";
@@ -46,7 +50,7 @@ public class CastAdapter extends RecyclerView.Adapter<CastAdapter.CastViewHolder
     
     @Override
     public int getItemCount() {
-        return Math.min(castList.size(), 10); // Show max 10 cast members
+        return Math.min(castList.size(), 10);
     }
     
     static class CastViewHolder extends RecyclerView.ViewHolder {
@@ -67,7 +71,7 @@ public class CastAdapter extends RecyclerView.Adapter<CastAdapter.CastViewHolder
             
             if (cast.getProfilePath() != null) {
                 String profileUrl = IMAGE_BASE_URL + cast.getProfilePath();
-                Glide.with(itemView.getContext())
+                Glide.with(itemView.getContext()) // Glide - загрузка фото
                         .load(profileUrl)
                         .placeholder(R.drawable.ic_launcher_background)
                         .error(R.drawable.ic_launcher_background)

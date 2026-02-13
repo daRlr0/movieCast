@@ -16,6 +16,10 @@ import com.example.moviecast.data.local.MediaItem;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * FavoritesAdapter - адаптер списка избранных фильмов (данные из Room).
+ * По клику открывается экран деталей.
+ */
 public class FavoritesAdapter extends RecyclerView.Adapter<FavoritesAdapter.FavoriteViewHolder> {
     
     private static final String IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w500";
@@ -82,7 +86,7 @@ public class FavoritesAdapter extends RecyclerView.Adapter<FavoritesAdapter.Favo
             ratingTextView.setText(String.format("%.1f", mediaItem.getVoteAverage()));
             
             String posterUrl = IMAGE_BASE_URL + mediaItem.getPosterPath();
-            Glide.with(itemView.getContext())
+            Glide.with(itemView.getContext()) // Glide - постер
                     .load(posterUrl)
                     .placeholder(R.drawable.ic_launcher_background)
                     .error(R.drawable.ic_launcher_background)

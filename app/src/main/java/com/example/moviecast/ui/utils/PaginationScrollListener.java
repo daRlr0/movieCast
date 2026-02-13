@@ -4,6 +4,10 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+/**
+ * PaginationScrollListener - подгрузка следующей страницы при прокрутке списка.
+ * Вызывает loadMoreItems(), когда пользователь доскроллил до конца.
+ */
 public abstract class PaginationScrollListener extends RecyclerView.OnScrollListener {
     
     private GridLayoutManager layoutManager;
@@ -20,6 +24,7 @@ public abstract class PaginationScrollListener extends RecyclerView.OnScrollList
         int totalItemCount = layoutManager.getItemCount();
         int firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition();
         
+        // Достигли конца списка - подгружаем ещё
         if (!isLoading() && hasMorePages()) {
             if ((visibleItemCount + firstVisibleItemPosition) >= totalItemCount
                     && firstVisibleItemPosition >= 0) {

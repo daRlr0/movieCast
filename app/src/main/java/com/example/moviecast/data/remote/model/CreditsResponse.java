@@ -3,6 +3,7 @@ package com.example.moviecast.data.remote.model;
 import com.google.gson.annotations.SerializedName;
 import java.util.List;
 
+/** Ответ API: актёрский состав фильма. */
 public class CreditsResponse {
     
     @SerializedName("id")

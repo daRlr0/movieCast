@@ -21,13 +21,18 @@ import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
+import retrofit2.Call; // Retrofit - для асинхронных запросов
+import retrofit2.Callback; // Retrofit - обработка ответов
+import retrofit2.Response; // Retrofit - обертка HTTP ответа
 
+/**
+ * MovieDetailsViewModel - управление данными для экрана деталей
+ * Загружает данные через Retrofit (API) и Room (локальная база)
+ */
 public class MovieDetailsViewModel extends AndroidViewModel {
     
     private MovieRepository repository;
+    
     private MutableLiveData<Movie> movieLiveData;
     private MutableLiveData<List<Cast>> castLiveData;
     private MutableLiveData<String> genresLiveData;
@@ -36,13 +41,18 @@ public class MovieDetailsViewModel extends AndroidViewModel {
     private MutableLiveData<String> errorLiveData;
     private MutableLiveData<Boolean> isFavoriteLiveData;
     private MutableLiveData<String> userCommentLiveData;
+    
     private Executor executor;
+    
+    // Для сохранения в Room при добавлении в избранное
     private List<Cast> currentCast;
     private List<Genre> currentGenres;
     
     public MovieDetailsViewModel(@NonNull Application application) {
         super(application);
+        
         repository = new MovieRepository(application);
+        
         movieLiveData = new MutableLiveData<>();
         castLiveData = new MutableLiveData<>();
         genresLiveData = new MutableLiveData<>();
@@ -51,9 +61,9 @@ public class MovieDetailsViewModel extends AndroidViewModel {
         errorLiveData = new MutableLiveData<>();
         isFavoriteLiveData = new MutableLiveData<>();
         userCommentLiveData = new MutableLiveData<>();
+        
         executor = Executors.newSingleThreadExecutor();
         
-        // Load genres from cache or fetch them
         loadGenres();
     }
     
@@ -89,44 +99,51 @@ public class MovieDetailsViewModel extends AndroidViewModel {
         return userCommentLiveData;
     }
     
+    // Загрузка жанров из кэша или API
     private void loadGenres() {
         executor.execute(() -> {
-            int genreCount = repository.getGenreCountSync();
+            int genreCount = repository.getGenreCountSync(); // Room - READ
+            
             if (genreCount == 0) {
-                // Fetch genres from API
+                // Retrofit - загрузка жанров с API
                 repository.getGenres().enqueue(new Callback<GenreResponse>() {
                     @Override
                     public void onResponse(Call<GenreResponse> call, Response<GenreResponse> response) {
                         if (response.isSuccessful() && response.body() != null) {
-                            repository.cacheGenres(response.body().getGenres());
+                            repository.cacheGenres(response.body().getGenres()); // Room - CREATE
                         }
                     }
                     
                     @Override
                     public void onFailure(Call<GenreResponse> call, Throwable t) {
-                        // Genre loading failure is not critical
+                        // Не критично
                     }
                 });
             }
         });
     }
     
+    // Загрузка деталей фильма из Room и API
     public void loadMovieDetails(int movieId) {
         loadingLiveData.setValue(true);
         
-        // Check if movie exists in favorites (for offline support)
+        // Проверяем локальную базу (для offline и избранного)
         executor.execute(() -> {
-            MediaItem mediaItem = repository.getMediaItemByIdSync(movieId);
+            MediaItem mediaItem = repository.getMediaItemByIdSync(movieId); // Room - READ
+            
             if (mediaItem != null) {
+                // Фильм в избранном - загружаем offline данные
                 isFavoriteLiveData.postValue(mediaItem.isFavorite());
                 userCommentLiveData.postValue(mediaItem.getUserComment());
                 
-                // Load cached genres and cast if available
+                // Жанры из кэша (GSON десериализация)
                 if (mediaItem.getGenresJson() != null) {
                     currentGenres = repository.getGenresFromJson(mediaItem.getGenresJson());
                     String genreNames = getGenreNames(currentGenres);
                     genresLiveData.postValue(genreNames);
                 }
+                
+                // Актеры из кэша (GSON десериализация)
                 if (mediaItem.getCastJson() != null) {
                     currentCast = repository.getCastFromJson(mediaItem.getCastJson());
                     castLiveData.postValue(currentCast);
@@ -137,7 +154,8 @@ public class MovieDetailsViewModel extends AndroidViewModel {
             }
         });
         
-        // Load movie details from API
+        // Загрузка свежих данных из API
+        // Retrofit - детали фильма
         repository.getMovieDetails(movieId).enqueue(new Callback<Movie>() {
             @Override
             public void onResponse(Call<Movie> call, Response<Movie> response) {
@@ -167,7 +185,7 @@ public class MovieDetailsViewModel extends AndroidViewModel {
             }
         });
         
-        // Load cast from API
+        // Retrofit - актерский состав
         repository.getMovieCredits(movieId).enqueue(new Callback<CreditsResponse>() {
             @Override
             public void onResponse(Call<CreditsResponse> call, Response<CreditsResponse> response) {
@@ -179,25 +197,25 @@ public class MovieDetailsViewModel extends AndroidViewModel {
             
             @Override
             public void onFailure(Call<CreditsResponse> call, Throwable t) {
-                // Cast loading failure is not critical
+                // Не критично
             }
         });
         
-        // Load videos/trailers from API
+        // Retrofit - трейлеры
         repository.getMovieVideos(movieId).enqueue(new Callback<VideosResponse>() {
             @Override
             public void onResponse(Call<VideosResponse> call, Response<VideosResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     List<Video> videos = response.body().getResults();
                     if (videos != null && !videos.isEmpty()) {
-                        // Find trailer
+                        // Ищем трейлер
                         for (Video video : videos) {
                             if ("Trailer".equals(video.getType()) && "YouTube".equals(video.getSite())) {
                                 trailerKeyLiveData.setValue(video.getKey());
                                 break;
                             }
                         }
-                        // If no trailer found, use first video
+                        // Если не нашли, берем первое видео
                         if (trailerKeyLiveData.getValue() == null && !videos.isEmpty()) {
                             trailerKeyLiveData.setValue(videos.get(0).getKey());
                         }
@@ -207,11 +225,12 @@ public class MovieDetailsViewModel extends AndroidViewModel {
             
             @Override
             public void onFailure(Call<VideosResponse> call, Throwable t) {
-                // Trailer loading failure is not critical
+                // Не критично
             }
         });
     }
     
+    // Конвертация списка жанров в строку
     private String getGenreNames(List<Genre> genres) {
         if (genres == null || genres.isEmpty()) {
             return "";
@@ -226,48 +245,51 @@ public class MovieDetailsViewModel extends AndroidViewModel {
         return names.toString();
     }
     
+    // Добавление/удаление фильма из избранного
     public void toggleFavorite(int movieId) {
         executor.execute(() -> {
-            MediaItem existingItem = repository.getMediaItemByIdSync(movieId);
+            MediaItem existingItem = repository.getMediaItemByIdSync(movieId); // Room - READ
             Movie currentMovie = movieLiveData.getValue();
             
             if (currentMovie == null) return;
             
             if (existingItem != null) {
+                // Фильм уже в базе
                 boolean newFavoriteStatus = !existingItem.isFavorite();
                 if (newFavoriteStatus) {
-                    repository.updateFavoriteStatus(movieId, true);
+                    repository.updateFavoriteStatus(movieId, true); // Room - UPDATE
                     isFavoriteLiveData.postValue(true);
                 } else {
-                    repository.deleteMediaItemById(movieId);
+                    repository.deleteMediaItemById(movieId); // Room - DELETE
                     isFavoriteLiveData.postValue(false);
                     userCommentLiveData.postValue("");
                 }
             } else {
-                // Create new favorite with genres and cast
+                // Создаем новую запись с жанрами и актерами (GSON сериализация)
                 MediaItem newItem = repository.convertMovieToMediaItemWithExtras(
                         currentMovie, true, "", currentGenres, currentCast);
-                repository.insertMediaItem(newItem);
+                repository.insertMediaItem(newItem); // Room - CREATE
                 isFavoriteLiveData.postValue(true);
             }
         });
     }
     
+    // Обновление комментария пользователя
     public void updateComment(int movieId, String comment) {
         executor.execute(() -> {
-            MediaItem existingItem = repository.getMediaItemByIdSync(movieId);
+            MediaItem existingItem = repository.getMediaItemByIdSync(movieId); // Room - READ
             Movie currentMovie = movieLiveData.getValue();
             
             if (currentMovie == null) return;
             
             if (existingItem != null) {
-                repository.updateComment(movieId, comment);
+                repository.updateComment(movieId, comment); // Room - UPDATE
                 userCommentLiveData.postValue(comment);
             } else {
-                // Create new item with comment and mark as favorite, including genres and cast
+                // Фильма нет в базе - создаем новую запись
                 MediaItem newItem = repository.convertMovieToMediaItemWithExtras(
                         currentMovie, true, comment, currentGenres, currentCast);
-                repository.insertMediaItem(newItem);
+                repository.insertMediaItem(newItem); // Room - CREATE
                 isFavoriteLiveData.postValue(true);
                 userCommentLiveData.postValue(comment);
             }

@@ -25,74 +25,30 @@ import retrofit2.Callback; // Retrofit - обработка асинхронны
 import retrofit2.Response; // Retrofit - обертка для HTTP ответов
 
 /**
- * MainViewModel - ViewModel для главного экрана приложения
- * 
- * Роль в MVVM:
- * Это ViewModel, которая управляет данными для главного экрана с сеткой фильмов.
- * ViewModel отвечает за бизнес-логику, загрузку данных из Repository и предоставление
- * данных для UI через LiveData. ViewModel переживает изменения конфигурации (поворот экрана).
- * 
- * Основные функции:
- * - Загрузка популярных фильмов через Retrofit
- * - Поиск фильмов по запросу
- * - Пагинация (подгрузка следующих страниц)
- * - Управление избранными фильмами через Room
- * - Фильтрация по жанрам и годам
+ * MainViewModel - данные главного экрана: список фильмов, поиск, пагинация, фильтры, избранное.
+ * Retrofit для API, Room для избранного.
  */
 public class MainViewModel extends AndroidViewModel {
     
-    // Repository для работы с данными (Retrofit + Room)
     private MovieRepository repository;
-    
-    // LiveData для наблюдения за списком фильмов с информацией об избранном
     private MutableLiveData<List<MovieWithFavorite>> moviesLiveData;
-    
-    // LiveData для отображения индикатора загрузки
     private MutableLiveData<Boolean> loadingLiveData;
-    
-    // LiveData для отображения ошибок
     private MutableLiveData<String> errorLiveData;
-    
-    // LiveData для уведомления об изменении статуса избранного у конкретного фильма
     private MutableLiveData<Integer> favoriteToggledLiveData;
     
-    // Список всех загруженных фильмов
     private List<Movie> allMovies;
-    
-    // Список отфильтрованных фильмов (по жанру или году)
     private List<Movie> filteredMovies;
-    
-    // Карта для кэширования статуса избранного (ID фильма -> избранный?)
     private Map<Integer, Boolean> favoriteStatusMap;
-    
-    // Executor для выполнения операций с базой данных Room в фоновом потоке
     private Executor executor;
     
-    // Текущая страница пагинации
     private int currentPage = 1;
-    
-    // Общее количество страниц
     private int totalPages = 1;
-    
-    // Флаг состояния загрузки
     private boolean isLoading = false;
-    
-    // Текущий поисковый запрос
     private String currentQuery = "";
-    
-    // Флаг режима поиска
     private boolean isSearchMode = false;
-    
-    // ID жанра для фильтрации (null = без фильтра)
     private Integer filterGenreId = null;
-    
-    // Год для фильтрации (null = без фильтра)
     private Integer filterYear = null;
     
-    /**
-     * Конструктор ViewModel
-     * Инициализирует Repository, LiveData и запускает загрузку популярных фильмов
-     */
     public MainViewModel(@NonNull Application application) {
         super(application);
         repository = new MovieRepository(application);
